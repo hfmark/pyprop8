@@ -1,0 +1,365 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\allowdisplaybreaks
+\usepackage[margin=2cm]{geometry}
+\usepackage{multicol}
+\DeclareMathOperator{\diag}{diag}
+\title{\texttt{pyprop}---Implementation notes}
+\author{Andrew Valentine}
+
+\begin{document}
+
+\maketitle
+This document records various theoretical details that underpin the implementation of \texttt{pyprop}.
+
+\section{The P-SV system}
+We have (OW18 eqs.55--57)
+\begin{equation}
+\mathbf{A}^\textrm{P-SV} = \mathbf{Z A^\prime Z^{-1}}
+\end{equation}
+with
+\begin{align}
+\mathbf{Z}& =\left(
+\begin{array}{cccc}
+ \frac{1}{\sqrt{\rho }} & 0 & 0 & 0 \\
+ 0 & 0 & 0 & -\frac{1}{\sqrt{\rho }} \\
+ 0 & 0 & \sqrt{\rho } & -\frac{2 k \mu }{\sqrt{\rho }} \\
+ \frac{2 k \mu }{\sqrt{\rho }} & \sqrt{\rho } & 0 & 0 \\
+\end{array}
+\right)\\
+\mathbf{A^\prime}&=\left(
+\begin{array}{cccc}
+ 0 & 0 & \frac{\rho }{\sigma } & -k \\
+ 0 & 0 & -k & \omega ^2 \\
+ -\omega ^2 & -k & 0 & 0 \\
+ -k & -\frac{\rho }{\mu } & 0 & 0 \\
+\end{array}
+\right)
+\end{align}
+We use the notation $\mathcal{P}_6$ to denote the $6\times 6$ minor propagator that carries a minor vector $\mathbf{m}_a$ at $z_a$ to $z_b=z_a+h$. It can be shown that
+\begin{equation}
+\boldsymbol{\mathcal{P}_6} = \boldsymbol{\mathcal{Z}_6} \mathbf{R_1 U}\boldsymbol{\Lambda}\mathbf{V R_2}\boldsymbol{\mathcal{Z}}^\mathbf{-1}_\mathbf{6}
+\end{equation}
+where $\boldsymbol{\mathcal{Z}_6}$ is the $6\times 6$ minor matrix associated with $\mathbf{Z}$, and where
+\begin{align}
+\mathbf{R_1}&=\diag\left(
+\begin{array}{cccccc}
+ 1 & \frac{k}{\zeta _{\sigma }} &  \frac{k^2}{\omega ^2 \zeta _{\sigma }} &  \frac{\omega ^2}{\zeta _{\sigma }} &  \frac{k}{\zeta _{\sigma }} & \frac{\zeta _{\mu }}{\zeta _{\sigma }} \\
+\end{array}
+\right)\\
+\mathbf{U}&=\left(
+\begin{array}{cccccc}
+ -1 & 1 & -1 & 1 & 0 & 0 \\
+ 1 & 1 & -1 & -1 & 0 & 1 \\
+ \xi +1 & \xi +1 & \xi -1 & \xi -1 & 1 & 1 \\
+ -1 & -1 & 1 & 1 & 0 & 0 \\
+ -1 & -1 & 1 & 1 & -1 & 0 \\
+ -1 & 1 & 1 & -1 & 0 & 0 \\
+\end{array}
+\right)\\
+\boldsymbol{\Lambda}&=\left(
+\begin{array}{cccccc}
+ \exp{h \left(\zeta _{\sigma }-\zeta _{\mu }\right)} & \exp{h \left(\zeta _{\mu }-\zeta _{\sigma }\right)} & \exp{-h
+   \left(\zeta _{\mu }+\zeta _{\sigma }\right)} & \exp{h \left(\zeta _{\mu }+\zeta _{\sigma }\right)} & \frac{\zeta
+   _{\mu } \zeta _{\sigma }}{k^2} & \frac{\zeta _{\mu } \zeta _{\sigma }}{k^2} \\
+\end{array}
+\right)\\
+\mathbf{V}&=\frac{1}{4}\left(
+\begin{array}{cccccc}
+ -1 & -1 & 1 & -\xi -1 & 1 & -1 \\
+ 1 & -1 & 1 & -\xi -1 & 1 & 1 \\
+ -1 & -1 & 1 & \xi -1 & 1 & 1 \\
+ 1 & -1 & 1 & \xi -1 & 1 & -1 \\
+ 0 & 0 & 0 & 4 & -4 & 0 \\
+ 0 & 4 & 0 & 4 & 0 & 0 \\
+\end{array}
+\right)\\
+%     \mathbf{M_1}&= \left(
+%    \begin{array}{cccccc}
+%     P_c & -X_2 & X_2 & \xi  X_1-X_2 & X_2 & -P_s \\
+%     -X_1 & P_s & -P_s & P_s-\xi  P_c & -P_s & X_2 \\
+%     \xi  X_2-X_1 & P_s-\xi  P_c & \xi  P_c-P_s & \left(\xi ^2+1\right) P_s-2 \xi  P_c & \xi  P_c-P_s & X_2-\xi  X_1
+%       \\
+%     X_1 & -P_s & P_s & \xi  P_c-P_s & P_s & -X_2 \\
+%     X_1 & -P_s & P_s & \xi  P_c-P_s & P_s & -X_2 \\
+%     -P_s & X_1 & -X_1 & X_1-\xi  X_2 & -X_1 & P_c \\
+%    \end{array}
+%    \right)\\
+%    \mathbf{M_2}&=\left(
+%    \begin{array}{cccccc}
+%     0 & 0 & 0 & 0 & 0 & 0 \\
+%     0 & \xi  & 0 & \xi  & 0 & 0 \\
+%     0 & \xi  & 0 & 2 \xi  & -\xi  & 0 \\
+%     0 & 0 & 0 & 0 & 0 & 0 \\
+%     0 & 0 & 0 & -\xi  & \xi  & 0 \\
+%     0 & 0 & 0 & 0 & 0 & 0 \\
+%    \end{array}
+%    \right)\\
+\mathbf{R_2} &=\diag\left(
+\begin{array}{cccccc}
+ 1 &  \frac{k}{\zeta _{\mu }} &  \frac{\omega ^2}{\zeta _{\mu }} &  \frac{k^2}{\omega ^2 \zeta _{\mu }} &  \frac{k}{\zeta _{\mu }} &  \frac{\zeta _{\sigma }}{\zeta _{\mu }} \\
+\end{array}
+\right)\end{align}
+with
+\begin{align*}
+\zeta_\sigma &= \sqrt{k^2 - \frac{\rho \omega^2}{\sigma}}\\
+\zeta_\mu &= \sqrt{k^2 - \frac{\rho \omega^2}{\mu}}\\
+\xi &= \frac{\zeta_\mu\zeta_\sigma}{k^2}
+\end{align*}
+\begin{align}
+\partial_{\zeta_\sigma} \mathbf{R_1} &=\diag \left(
+\begin{array}{cccccc}
+ 0 & -\frac{k}{\zeta _{\sigma }^2} & -\frac{k^2}{\omega ^2 \zeta _{\sigma }^2} & -\frac{\omega ^2}{\zeta _{\sigma }^2} & -\frac{k}{\zeta _{\sigma }^2}  & -\frac{\zeta _{\mu }}{\zeta _{\sigma }^2} \\
+\end{array}
+\right)\\
+\partial_{\zeta_\mu} \mathbf{R_1} &=\diag\left(
+\begin{array}{cccccc}
+ 0 & 0 & 0 & 0 & 0 & \frac{1}{\zeta _{\sigma }} \\
+\end{array}
+\right)\\
+\partial_{\zeta_\sigma}\mathbf{U}&=\left(
+\begin{array}{cccccc}
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+ \frac{\zeta _{\mu }}{k^2} & \frac{\zeta _{\mu }}{k^2} & \frac{\zeta _{\mu }}{k^2} & \frac{\zeta _{\mu }}{k^2} & 0
+   & 0 \\
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+\end{array}
+\right)\\
+\partial_{\zeta_\mu}\mathbf{U}&=\left(
+\begin{array}{cccccc}
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+ \frac{\zeta _{\sigma }}{k^2} & \frac{\zeta _{\sigma }}{k^2} & \frac{\zeta _{\sigma }}{k^2} & \frac{\zeta _{\sigma }}{k^2} & 0
+   & 0 \\
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+\end{array}
+\right)\\
+\partial_h \mathbf{\Lambda} &=\diag \left(
+\begin{array}{cccccc}
+ \zeta _{\sigma }-\zeta _{\mu } & \zeta _{\mu }-\zeta _{\sigma } & -\zeta _{\mu }-\zeta _{\sigma } & \zeta _{\mu
+   }+\zeta _{\sigma } & 0 & 0 \\
+\end{array}
+\right)\mathbf{\Lambda}\\
+\partial_{\zeta_\sigma} \mathbf{\Lambda}&=\diag\left(
+\begin{array}{cccccc}
+ h & -h & -h & h & \frac{1}{\zeta _{\sigma }} & \frac{1}{\zeta _{\sigma }} \\
+\end{array}
+\right)\mathbf{\Lambda}\\
+\partial_{\zeta_\mu} \mathbf{\Lambda}&=\diag\left(
+\begin{array}{cccccc}
+ -h & h & -h & h & \frac{1}{\zeta _{\mu }} & \frac{1}{\zeta _{\mu }} \\
+\end{array}
+\right)\mathbf{\Lambda}\\
+\partial_{\zeta_\sigma}\mathbf{V} &= \frac{\zeta_\mu}{4k^2}\left(
+\begin{array}{cccccc}
+ 0 & 0 & 0 & -1 & 0 & 0 \\
+ 0 & 0 & 0 & -1 & 0 & 0 \\
+ 0 & 0 & 0 & 1 & 0 & 0 \\
+ 0 & 0 & 0 & 1 & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+\end{array}
+\right)\\
+\partial_{\zeta_\mu}\mathbf{V} &= \frac{\zeta_\sigma}{4k^2}\left(
+\begin{array}{cccccc}
+ 0 & 0 & 0 & -1 & 0 & 0 \\
+ 0 & 0 & 0 & -1 & 0 & 0 \\
+ 0 & 0 & 0 & 1 & 0 & 0 \\
+ 0 & 0 & 0 & 1 & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+\end{array}
+\right)\\
+\partial_{\zeta_\mu} \mathbf{R_2} &=\diag \left(
+\begin{array}{cccccc}
+ 0 & -\frac{k}{\zeta _{\mu }^2} &  -\frac{\omega ^2}{\zeta _{\mu}^2} & -\frac{k^2}{\omega ^2 \zeta _{\mu }^2} &-\frac{k}{\zeta _{\mu}^2}  & -\frac{\zeta _{\sigma }}{\zeta _{\mu }^2} \\
+\end{array}
+\right)\\
+\partial_{\zeta_\sigma} \mathbf{R_2} &=\diag\left(
+\begin{array}{cccccc}
+ 0 & 0 & 0 & 0 & 0 & \frac{1}{\zeta _{\mu}} \\
+\end{array}
+\right)
+\end{align}
+
+
+
+\subsection{Density derivatives}
+Differentiating the propagator with respect to density, we get
+\begin{multline}
+\frac{\partial \boldsymbol{\mathcal{P}}}{\partial \rho} =  \frac{\partial \boldsymbol{\mathcal{Z}_6}}{\partial \rho}\mathbf{R_1 (M_1+M_2)R_2}\boldsymbol{\mathcal{Z}}^\mathbf{-1}_\mathbf{6}+ \boldsymbol{\mathcal{Z}_6} \frac{\partial \mathbf{R_1}}{\partial \rho}\mathbf{ (M_1+M_2)R_2}\boldsymbol{\mathcal{Z}}^\mathbf{-1}_\mathbf{6}+ \boldsymbol{\mathcal{Z}_6} \mathbf{R_1 (\frac{\partial M_1}{\partial \rho}+\frac{\partial M_2}{\partial \rho})R_2}\boldsymbol{\mathcal{Z}}^\mathbf{-1}_\mathbf{6}\\+ \boldsymbol{\mathcal{Z}_6} \mathbf{R_1 (M_1+M_2) \frac{\partial R_2}{\partial \rho}}\boldsymbol{\mathcal{Z}}^\mathbf{-1}_\mathbf{6}+ \boldsymbol{\mathcal{Z}_6} \mathbf{R_1 (M_1+M_2)R_2}\frac{\partial \boldsymbol{\mathcal{Z}}^\mathbf{-1}_\mathbf{6}}{\partial \rho}
+\end{multline}
+It turns out that
+\begin{equation}
+\frac{\partial \boldsymbol{\mathcal{Z}_6}}{\partial \rho} =  \boldsymbol{\mathcal{Z}_6}\mathbf{K}
+\end{equation}
+where
+\begin{equation}
+\mathbf{K} = \left(
+\begin{array}{cccccc}
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+ 0 & 0 & -\frac{1}{\rho } & 0 & 0 & 0 \\
+ 0 & 0 & 0 & \frac{1}{\rho } & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+\end{array}
+\right)
+\end{equation}
+Similarly,
+\begin{equation}
+\frac{\partial \boldsymbol{\mathcal{Z}}^\mathbf{-1}_\mathbf{6}}{\partial \rho} = -\mathbf{K}\boldsymbol{\mathcal{Z}}^\mathbf{-1}_\mathbf{6}
+\end{equation}
+and
+\begin{equation}
+\frac{\partial \mathbf{R_i}}{\partial \rho}=\mathbf{J_iR_i}
+\end{equation}
+where
+\begin{equation}
+\mathbf{J_1} = \frac{\omega^2}{2\sigma \zeta_\sigma^2}\left(
+\begin{array}{cccccc}
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+ 0 & 1 & 0 & 0 & 0 & 0 \\
+ 0 & 0 & 1 & 0 & 0 & 0 \\
+ 0 & 0 & 0 & 1 & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 1 & 0 \\
+ 0 & 0 & 0 & 0 & 0 & 1- \frac{\sigma \zeta_\sigma^2}{\mu \zeta_\mu^2}\\
+\end{array}
+\right)
+\end{equation}
+\begin{equation}
+\mathbf{J_2} = \frac{\omega^2}{2\mu \zeta_\mu^2}\left(
+\begin{array}{cccccc}
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+ 0 & 1 & 0 & 0 & 0 & 0 \\
+ 0 & 0 & 1 & 0 & 0 & 0 \\
+ 0 & 0 & 0 & 1 & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 1 & 0 \\
+ 0 & 0 & 0 & 0 & 0 & 1- \frac{\mu \zeta_\mu^2}{\sigma \zeta_\sigma^2}\\
+\end{array}
+\right)
+\end{equation}
+Hence,
+\begin{multline}
+\frac{\partial \boldsymbol{\mathcal{P}}}{\partial \rho} =  \boldsymbol{\mathcal{Z}_6}(\mathbf{J_1+K})\mathbf{R_1 (M_1+M_2)R_2}\boldsymbol{\mathcal{Z}}^\mathbf{-1}_\mathbf{6}+ \boldsymbol{\mathcal{Z}_6} \mathbf{R_1 (\frac{\partial M_1}{\partial \rho}+\frac{\partial M_2}{\partial \rho})R_2}\boldsymbol{\mathcal{Z}}^\mathbf{-1}_\mathbf{6}\\+ \boldsymbol{\mathcal{Z}_6} \mathbf{R_1 (M_1+M_2) R_2 (J_2-K)}\boldsymbol{\mathcal{Z}}^\mathbf{-1}_\mathbf{6}
+\end{multline}
+Now, we note that $\mathbf{M_1}$ can be expressed as a power series in $\xi$
+\begin{equation}
+\mathbf{M_1} = \mathbf{M_{10}} + \xi \mathbf{M_{11}} + \xi^2 \mathbf{M_{12}}
+\end{equation}
+and hence
+\begin{equation}
+\frac{\partial \mathbf{M_1}}{\partial \rho} = \frac{\partial \mathbf{M_{10}}}{\partial \rho} + \frac{\partial \xi}{\partial \rho}\mathbf{M_{11}}+\xi \frac{\partial\mathbf{M_{11}}}{\partial \rho}+2\xi \frac{\partial\xi}{\partial \rho}\mathbf{M_{12}}+\xi^2 \frac{\partial \mathbf{M_{12}}}{\partial \rho}
+\end{equation}
+\begin{equation}
+\frac{\partial\mathbf{M_{10}}}{\partial \rho} = \frac{h \omega^2}{2}\left(
+\begin{array}{cccccc}
+ -Y_{\text{X$\sigma $}} & Y_{\text{P$\mu $}} & -Y_{\text{P$\mu $}} & Y_{\text{P$\mu $}} & -Y_{\text{P$\mu $}} &
+   Y_{\text{X$\mu $}} \\
+ Y_{\text{P$\sigma $}} & -Y_{\text{X$\mu $}} & Y_{\text{X$\mu $}} & -Y_{\text{X$\mu $}} & Y_{\text{X$\mu $}} &
+   -Y_{\text{P$\mu $}} \\
+ Y_{\text{P$\sigma $}} & -Y_{\text{X$\mu $}} & Y_{\text{X$\mu $}} & -Y_{\text{X$\mu $}} & Y_{\text{X$\mu $}} &
+   -Y_{\text{P$\mu $}} \\
+ -Y_{\text{P$\sigma $}} & Y_{\text{X$\mu $}} & -Y_{\text{X$\mu $}} & Y_{\text{X$\mu $}} & -Y_{\text{X$\mu $}} &
+   Y_{\text{P$\mu $}} \\
+ -Y_{\text{P$\sigma $}} & Y_{\text{X$\mu $}} & -Y_{\text{X$\mu $}} & Y_{\text{X$\mu $}} & -Y_{\text{X$\mu $}} &
+   Y_{\text{P$\mu $}} \\
+ Y_{\text{X$\mu $}} & -Y_{\text{P$\sigma $}} & Y_{\text{P$\sigma $}} & -Y_{\text{P$\sigma $}} & Y_{\text{P$\sigma
+   $}} & -Y_{\text{X$\sigma $}} \\
+\end{array}
+\right)
+\end{equation}
+\begin{equation}
+\frac{\partial\mathbf{M_{11}}}{\partial \rho} =\frac{h \omega^2}{2}\left(
+\begin{array}{cccccc}
+ 0 & 0 & 0 & -Y_{\text{P$\sigma $}} & 0 & 0 \\
+ 0 & 0 & 0 & Y_{\text{X$\sigma $}} & 0 & 0 \\
+ -Y_{\text{P$\mu $}} & Y_{\text{X$\sigma $}} & -Y_{\text{X$\sigma $}} & 2 Y_{\text{X$\sigma $}} &
+   -Y_{\text{X$\sigma $}} & Y_{\text{P$\sigma $}} \\
+ 0 & 0 & 0 & -Y_{\text{X$\sigma $}} & 0 & 0 \\
+ 0 & 0 & 0 & -Y_{\text{X$\sigma $}} & 0 & 0 \\
+ 0 & 0 & 0 & Y_{\text{P$\mu $}} & 0 & 0 \\
+\end{array}
+\right) \end{equation}
+
+\begin{equation}
+\frac{\partial\mathbf{M_{12}}}{\partial \rho} =\frac{h \omega^2}{2}\left(
+\begin{array}{cccccc}
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+ 0 & 0 & 0 & -Y_{\text{X$\mu $}} & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+\end{array}
+\right) \end{equation}
+
+\begin{equation}
+\frac{\partial \xi}{\partial\rho}\cdot\left(\mathbf{M_{11}}+2\xi\mathbf{M_{12}}\right)=\frac{\omega ^2 \left(\mu  \zeta _{\mu }^2+\sigma  \zeta _{\sigma }^2\right)}{2 k^2 \mu  \sigma  \zeta _{\mu }
+   \zeta _{\sigma }}\left(
+\begin{array}{cccccc}
+ 0 & 0 & 0 & -X_1 & 0 & 0 \\
+ 0 & 0 & 0 & P_C & 0 & 0 \\
+ -X_2 & P_C & -P_C & 2 \left(P_C-\xi  P_s\right) & -P_C & X_1 \\
+ 0 & 0 & 0 & -P_C & 0 & 0 \\
+ 0 & 0 & 0 & -P_C & 0 & 0 \\
+ 0 & 0 & 0 & X_2 & 0 & 0 \\
+\end{array}
+\right)
+\end{equation}
+\subsection{P-wave modulus derivatives}
+\begin{equation}
+\frac{\partial \boldsymbol{\mathcal{Z}_6}}{\partial \sigma} = 0
+\end{equation}
+\begin{equation}
+\frac{\partial \boldsymbol{\mathcal{Z}_6^{-1}}}{\partial \sigma} = 0
+\end{equation}
+\begin{equation}
+\frac{\partial \mathbf{R_1}}{\partial \sigma} =-\frac{\rho\omega^2}{2\sigma^2 \zeta_\sigma^2} \left(
+\begin{array}{cccccc}
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+ 0 & 1 & 0 & 0 & 0 & 0 \\
+ 0 & 0 & 1 & 0 & 0 & 0 \\
+ 0 & 0 & 0 & 1 & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 1 & 0 \\
+ 0 & 0 & 0 & 0 & 0 & 1 \\
+\end{array}
+\right)\mathbf{R_1}
+\end{equation}
+
+
+
+
+
+\subsection{S-wave modulus derivatives}
+\begin{equation}
+\frac{\partial \boldsymbol{\mathcal{Z}_6}}{\partial \mu} = \boldsymbol{\mathcal{Z}_6}\left(
+\begin{array}{cccccc}
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+ 0 & 0 & -\frac{2 k}{\rho } & 0 & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+ 0 & \frac{2 k}{\rho } & 0 & 0 & -\frac{2 k}{\rho } & 0 \\
+ 0 & 0 & \frac{2 k}{\rho } & 0 & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+\end{array}
+\right)
+\end{equation}
+\begin{equation}
+\frac{\partial \boldsymbol{\mathcal{Z}_6^{-1}}}{\partial \mu} = -\left(
+\begin{array}{cccccc}
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+ 0 & 0 & -\frac{2 k}{\rho } & 0 & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+ 0 & \frac{2 k}{\rho } & 0 & 0 & -\frac{2 k}{\rho } & 0 \\
+ 0 & 0 & \frac{2 k}{\rho } & 0 & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+\end{array}
+\right)\boldsymbol{\mathcal{Z}_6^{-1}}
+\end{equation}
+\end{document}

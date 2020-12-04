@@ -1363,8 +1363,48 @@ def propagate_zerofreq_deriv(k,dz,sigma,mu,rho,m2=None,m4=None,m6=None,inplace=T
         m6r = None
     return m2r,m4r,m6r
 
+def propagate(omega,k,dz,sigma,mu,rho,m2 = None, m4 = None, m6 = None, inplace=True, dh = False, dmu = False, dsigma = False, drho = False):
 
+    zmu = np.lib.scimath.sqrt(k**2 - rho*omega**2/mu)
+    M = np.zeros((nk,2*(1+dmu+drho),2),dtype='complex128')
+    M[:,0,0] = -mu*zmu/2
+    M[:,0,1] =  mu*zmu/2
 
+    M[:,1,0] = 0.5
+    M[:,1,1] = 0.5
+    i=2
+    if dmu:
+        M[:,i,0] = -(k**2 + zmu**2)/(4*zmu)
+        M[:,i,1] = (k**2 + zmu**2)/(4*zmu)
+        i+=2
+    if drho:
+        M[:,i,0] = omega**2/(4*zmu)
+        M[:,i,1] = -omega**2/(4*zmu)
+    tmp = scm.ScaledMatrixStack(M).matmul(m2)
+    expargs = np.array([-dz*zmu,dz*zmu],dtype='complex128')
+    sc = np.real(expargs).max(0)
+    M = np.zeros((nk,2*(1+dh+dmu+drho),2*(1+dmu+drho)),dtype='complex128')
+    M[:,0,0] = np.diag(np.exp(expargs[0,:]-sc))
+    M[:,1,1] = np.diag(np.exp(expargs[1,:]-sc))
+    i = 2
+    j = 2
+    if dh:
+        M[:,i,0] = -zmu*M[:,0,0]
+        M[:,i+1,1] = zmu*M[:,1,1]
+        i+=2
+    if dmu:
+        M[:,i,0] = -dz*rho*omega**2 * M[:,0,0]/(2*mu**2*zmu)
+        M[:,i,1] = dz*rho*omega**2 * M[:,1,1]/(2*mu**2*zmu)
+        M[:,i:i+2,j:j+1] = M[:,0:2,0:2]
+        i+=2
+        j+=2
+    if drho:
+        M[:,i,0] = dz*omega**2 * M[:,0,0]/(2*mu*zmu)
+        M[:,i,1] = -dz*omega**2 * M[:,1,1]/(2*mu*zmu)
+        M[:,i:i+2,j:j+1] = M[:,0:2,0:2]
+        i+=2
+        j+=2
+    tmp = scm.ScaledMatrixStack(M,sc).matmul(tmp,out=tmp)
 def propagate(omega,k,dz,sigma,mu,rho,m2=None,m4=None,m6=None,inplace=True):
     # Propagate the systems in m2/m4/m6 through layer.
     if np.any(k==0):
