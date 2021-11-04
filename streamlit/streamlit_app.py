@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pyprop8 as pp
 from pyprop8.utils import make_moment_tensor,rtf2xyz
-from mpl_toolkits.mplot3d import Axes3D
+#from mpl_toolkits.mplot3d import Axes3D
 
 class tqdm_dropin:
     def __init__(self,total):
